@@ -1,4 +1,4 @@
-use crate::expr::{Binary, Expr, Grouping, Literal, Unary, Visitor};
+use crate::expr::{Binary, Expr, Grouping, Literal, Sequence, Unary, Visitor};
 
 pub struct AstPrinter {}
 
@@ -41,6 +41,9 @@ impl Visitor<String> for AstPrinter {
             Expr::Literal(Literal { value }) => format!("{}", value),
             Expr::Unary(Unary { operator, right }) => {
                 AstPrinter::parenthesize(&operator.lexeme, vec![right])
+            }
+            Expr::Sequence(Sequence { left, right }) => {
+                AstPrinter::parenthesize("sequence", vec![left, right])
             }
         }
     }

@@ -1,6 +1,6 @@
 use crate::{
     error_handler::ErrorHandler,
-    expr::{Binary, Expr, Grouping, Literal, Unary},
+    expr::{Binary, Expr, Grouping, Literal, Sequence, Unary},
     token::{LiteralType, Token},
     token_type::TokenType,
 };
@@ -30,7 +30,17 @@ impl<'a> Parser<'a> {
     }
 
     fn expression(&mut self) -> Result<Expr, String> {
-        self.equality()
+        let mut expr = self.equality()?;
+
+        while self.match_token(vec![TokenType::Comma]) {
+            let right = self.equality()?;
+            expr = Expr::Sequence(Sequence {
+                left: Box::new(expr),
+                right: Box::new(right),
+            })
+        }
+
+        Ok(expr)
     }
 
     fn equality(&mut self) -> Result<Expr, String> {

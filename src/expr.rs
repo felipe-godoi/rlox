@@ -1,6 +1,12 @@
 use crate::token::{LiteralType, Token};
 
 #[derive(Debug)]
+pub struct Sequence {
+    pub left: Box<Expr>,
+    pub right: Box<Expr>,
+}
+
+#[derive(Debug)]
 pub struct Binary {
     pub left: Box<Expr>,
     pub operator: Token,
@@ -29,6 +35,7 @@ pub enum Expr {
     Grouping(Grouping),
     Literal(Literal),
     Unary(Unary),
+    Sequence(Sequence),
 }
 
 pub trait Visitor<T> {
