@@ -1,4 +1,4 @@
-use crate::expr::{Binary, Comma, Expr, Grouping, Literal, Unary, Visitor};
+use crate::expr::{Binary, Comma, Expr, Grouping, Literal, Ternary, Unary, Visitor};
 
 pub struct AstPrinter {}
 
@@ -45,6 +45,11 @@ impl Visitor<String> for AstPrinter {
             Expr::Comma(Comma { left, right }) => {
                 AstPrinter::parenthesize("sequence", vec![left, right])
             }
+            Expr::Ternary(Ternary {
+                condition,
+                then_branch,
+                else_branch,
+            }) => AstPrinter::parenthesize("ternary", vec![condition, then_branch, else_branch]),
         }
     }
 }

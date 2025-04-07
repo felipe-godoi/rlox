@@ -11,6 +11,7 @@ pub fn generate_ast(output_dir: &str) -> io::Result<()> {
             "Literal  = value: LiteralType",
             "Unary    = operator: Token, right: Box<Expr>",
             "Comma    = left: Box<Expr>, right: Box<Expr>",
+            "Ternary  = condition: Box<Expr>, then_branch: Box<Expr>, else_branch: Box<Expr>",
         ],
     )?;
 

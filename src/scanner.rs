@@ -221,6 +221,7 @@ impl<'a> Scanner<'a> {
         )
     }
 
+    // !TODO: resolver problema com acentos quando parseia a string!
     fn add_string(&mut self) {
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {

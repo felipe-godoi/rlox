@@ -1,6 +1,6 @@
 use crate::{
     error_handler::ErrorHandler,
-    expr::{Binary, Comma, Expr, Grouping, Literal, Unary},
+    expr::{Binary, Comma, Expr, Grouping, Literal, Ternary, Unary},
     token::{LiteralType, Token},
     token_type::TokenType,
 };
@@ -29,17 +29,11 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn expression(&mut self) -> Result<Expr, String> {
-        let expr = self.equality()?;
-
-        return Ok(expr);
-    }
-
     fn comma(&mut self) -> Result<Expr, String> {
-        let mut expr = self.equality()?;
+        let mut expr = self.expression()?;
 
         while self.match_token(vec![TokenType::Comma]) {
-            let right = self.equality()?;
+            let right = self.expression()?;
             expr = Expr::Comma(Comma {
                 left: Box::new(expr),
                 right: Box::new(right),
@@ -49,10 +43,34 @@ impl<'a> Parser<'a> {
         Ok(expr)
     }
 
+    fn expression(&mut self) -> Result<Expr, String> {
+        let expr = self.ternary()?;
+
+        return Ok(expr);
+    }
+
+    fn ternary(&mut self) -> Result<Expr, String> {
+        let mut expr = self.equality()?;
+
+        if self.match_token(vec![TokenType::Question]) {
+            let condition = expr;
+            let then_branch = self.equality()?;
+            self.consume(&TokenType::Colon, "Expect ':' after then branch.")?;
+            let else_branch = self.ternary()?;
+            expr = Expr::Ternary(Ternary {
+                condition: Box::new(condition),
+                then_branch: Box::new(then_branch),
+                else_branch: Box::new(else_branch),
+            })
+        };
+
+        Ok(expr)
+    }
+
     fn equality(&mut self) -> Result<Expr, String> {
         let mut expr = self.comparison()?;
 
-        while self.match_token(vec![TokenType::BangEqual, TokenType::Equal]) {
+        while self.match_token(vec![TokenType::BangEqual, TokenType::EqualEqual]) {
             let operator = self.previous();
             let right = self.comparison()?;
             expr = Expr::Binary(Binary {

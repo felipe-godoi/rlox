@@ -30,12 +30,20 @@ pub struct Comma {
 }
 
 #[derive(Debug)]
+pub struct Ternary {
+    pub condition: Box<Expr>,
+    pub then_branch: Box<Expr>,
+    pub else_branch: Box<Expr>,
+}
+
+#[derive(Debug)]
 pub enum Expr {
     Binary(Binary),
     Grouping(Grouping),
     Literal(Literal),
     Unary(Unary),
     Comma(Comma),
+    Ternary(Ternary),
 }
 
 pub trait Visitor<T> {
