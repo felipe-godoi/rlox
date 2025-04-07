@@ -77,6 +77,8 @@ impl<'a> Scanner<'a> {
             '+' => self.add_token(TokenType::Plus, LiteralType::None),
             ';' => self.add_token(TokenType::Semicolon, LiteralType::None),
             '*' => self.add_token(TokenType::Star, LiteralType::None),
+            ':' => self.add_token(TokenType::Colon, LiteralType::None),
+            '?' => self.add_token(TokenType::Question, LiteralType::None),
             '!' => {
                 let next_is_equal = self.match_char('=');
                 self.add_token(

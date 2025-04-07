@@ -10,6 +10,7 @@ pub fn generate_ast(output_dir: &str) -> io::Result<()> {
             "Grouping = expression: Box<Expr>",
             "Literal  = value: LiteralType",
             "Unary    = operator: Token, right: Box<Expr>",
+            "Comma    = left: Box<Expr>, right: Box<Expr>",
         ],
     )?;
 

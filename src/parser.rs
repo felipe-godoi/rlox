@@ -1,6 +1,6 @@
 use crate::{
     error_handler::ErrorHandler,
-    expr::{Binary, Expr, Grouping, Literal, Sequence, Unary},
+    expr::{Binary, Comma, Expr, Grouping, Literal, Unary},
     token::{LiteralType, Token},
     token_type::TokenType,
 };
@@ -30,11 +30,17 @@ impl<'a> Parser<'a> {
     }
 
     fn expression(&mut self) -> Result<Expr, String> {
+        let expr = self.equality()?;
+
+        return Ok(expr);
+    }
+
+    fn comma(&mut self) -> Result<Expr, String> {
         let mut expr = self.equality()?;
 
         while self.match_token(vec![TokenType::Comma]) {
             let right = self.equality()?;
-            expr = Expr::Sequence(Sequence {
+            expr = Expr::Comma(Comma {
                 left: Box::new(expr),
                 right: Box::new(right),
             })
@@ -151,10 +157,10 @@ impl<'a> Parser<'a> {
         }
 
         if self.match_token(vec![TokenType::LeftParen]) {
-            let expression = self.expression()?;
+            let comma = self.comma()?;
             self.consume(&TokenType::RightParen, "Expect ')' after expression.")?;
             return Ok(Expr::Grouping(Grouping {
-                expression: Box::new(expression),
+                expression: Box::new(comma),
             }));
         }
 
