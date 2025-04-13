@@ -1,78 +1,72 @@
-use std::{
-    fs,
-    io::{self, BufRead, BufReader, Write},
-    process,
-};
-
 use crate::{
-    ast_printer::AstPrinter, error_handler::ErrorHandler, parser::Parser, scanner::Scanner,
+    expr::{Expr, Grouping, Literal, Unary, Visitor},
+    token::LiteralType,
+    token_type::TokenType,
 };
 
-pub struct Interpreter {
-    error_handler: ErrorHandler,
-}
+struct Interpreter {}
 
 impl Interpreter {
-    pub fn new() -> Self {
-        let error_handler = ErrorHandler::new();
-
-        Self { error_handler }
+    fn evaluate(expr: Expr) -> LiteralType {
+        Interpreter::visit(expr)
     }
 
-    pub fn init(&mut self, file: Option<String>) {
-        if let Some(script) = file {
-            self.run_file(&script);
-        } else {
-            self.run_prompt();
-        }
-    }
+    fn evaluate_unary(unary: Unary) -> LiteralType {
+        let Unary { operator, right } = unary;
 
-    fn run_file(&mut self, path: &str) {
-        let content =
-            fs::read_to_string(path).expect("Erro ao ler o arquivo! Informe um caminho válido.");
+        let evaluated_right = Interpreter::evaluate(*right);
 
-        if self.error_handler.had_error {
-            process::exit(1);
-        }
-
-        self.run(&content);
-    }
-
-    fn run_prompt(&mut self) {
-        let stdin = io::stdin();
-        let handle = stdin.lock();
-
-        let reader = BufReader::new(handle);
-
-        print!("> ");
-        io::stdout().flush().unwrap();
-
-        for line in reader.lines() {
-            match line {
-                Ok(text) => {
-                    self.run(&text);
+        match operator.token_type {
+            TokenType::Minus => {
+                if let LiteralType::Number(value) = evaluated_right {
+                    return LiteralType::Number(-value);
                 }
-                Err(e) => eprintln!("Error reading line: {}", e),
-            }
 
-            print!("> ");
-            io::stdout().flush().unwrap();
-            self.error_handler.had_error = false;
+                LiteralType::None
+            }
+            TokenType::Bang => todo!(),
+            _ => unreachable!(),
         }
     }
+}
 
-    fn run(&mut self, source: &str) {
-        let mut scanner = Scanner::new(source.to_string(), &mut self.error_handler);
-        let tokens = scanner.scan_tokens();
-        let mut parser = Parser::new(tokens.to_owned(), &mut self.error_handler);
-        let expression = parser.parse();
-
-        if self.error_handler.had_error {
-            return;
+impl Visitor<LiteralType> for Interpreter {
+    fn visit(expr: Expr) -> LiteralType {
+        match expr {
+            Expr::Literal(Literal { value }) => value,
+            Expr::Grouping(Grouping { expression }) => Interpreter::evaluate(*expression),
+            Expr::Unary(unary) => Interpreter::evaluate_unary(unary),
+            _ => todo!(),
         }
+    }
+}
 
-        if let Some(expr) = expression {
-            AstPrinter::print(expr);
-        };
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_literal() {
+        let expr = Expr::Literal(Literal {
+            value: LiteralType::String(String::from("Teste")),
+        });
+
+        let result = Interpreter::visit(expr);
+
+        assert_eq!(result, LiteralType::String(String::from("Teste")));
+    }
+
+    #[test]
+    fn test_grouping() {
+        let expr = Expr::Grouping(Grouping {
+            expression: Box::new(Expr::Literal(Literal {
+                value: LiteralType::Number(123.into()),
+            })),
+        });
+
+        let result = Interpreter::visit(expr);
+
+        assert_eq!(result, LiteralType::Number(123.into()));
     }
 }

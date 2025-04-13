@@ -1,5 +1,5 @@
 use clap::Parser;
-use interpreter::Interpreter;
+use program::Program;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -15,6 +15,7 @@ mod error_handler;
 mod expr;
 mod interpreter;
 mod parser;
+mod program;
 mod scanner;
 mod token;
 mod token_type;
@@ -28,7 +29,7 @@ fn main() {
         return;
     }
 
-    let mut interpreter = Interpreter::new();
+    let mut interpreter = Program::new();
 
     interpreter.init(args.script);
 }
