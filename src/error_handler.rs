@@ -1,12 +1,31 @@
 use crate::{token::Token, token_type::TokenType};
 
+#[derive(Debug)]
+pub struct RuntimeError {
+    token: Token,
+    message: String,
+}
+
+impl RuntimeError {
+    pub fn new(token: Token, message: &str) -> Self {
+        Self {
+            token,
+            message: message.to_string(),
+        }
+    }
+}
+
 pub struct ErrorHandler {
     pub had_error: bool,
+    pub had_runtime_error: bool,
 }
 
 impl ErrorHandler {
     pub fn new() -> Self {
-        Self { had_error: false }
+        Self {
+            had_error: false,
+            had_runtime_error: false,
+        }
     }
 
     pub fn error(&mut self, line: usize, message: &str) {
@@ -24,5 +43,9 @@ impl ErrorHandler {
         } else {
             self.report(token.line, &format!(" at'{}'", token.lexeme), message)
         }
+    }
+
+    pub fn runtime_error(&mut self, error: RuntimeError) {
+        println!("{} \n[line {}]", error.message, error.token.line);
     }
 }

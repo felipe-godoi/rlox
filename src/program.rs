@@ -5,7 +5,8 @@ use std::{
 };
 
 use crate::{
-    ast_printer::AstPrinter, error_handler::ErrorHandler, parser::Parser, scanner::Scanner,
+    ast_printer::AstPrinter, error_handler::ErrorHandler, interpreter::Interpreter, parser::Parser,
+    scanner::Scanner,
 };
 
 pub struct Program {
@@ -32,7 +33,11 @@ impl Program {
             fs::read_to_string(path).expect("Erro ao ler o arquivo! Informe um caminho válido.");
 
         if self.error_handler.had_error {
-            process::exit(1);
+            process::exit(65);
+        }
+
+        if self.error_handler.had_runtime_error {
+            process::exit(70);
         }
 
         self.run(&content);
@@ -71,8 +76,11 @@ impl Program {
             return;
         }
 
+        let mut interpreter = Interpreter::new(&mut self.error_handler);
+
         if let Some(expr) = expression {
-            AstPrinter::print(expr);
+            // AstPrinter::print(expr);
+            interpreter.interpret(expr);
         };
     }
 }

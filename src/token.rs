@@ -1,6 +1,6 @@
 use std::fmt::{self, Display};
 
-use crate::token_type::TokenType;
+use crate::{error_handler::RuntimeError, token_type::TokenType};
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum LiteralType {
@@ -9,6 +9,16 @@ pub enum LiteralType {
     Bool(bool),
     Nil,
     None,
+}
+
+impl LiteralType {
+    pub fn as_number(&self, token: Token) -> Result<f64, RuntimeError> {
+        if let LiteralType::Number(value) = self {
+            return Ok(*value);
+        } else {
+            return Err(RuntimeError::new(token, "Operand must be a number"));
+        };
+    }
 }
 
 impl Display for LiteralType {
